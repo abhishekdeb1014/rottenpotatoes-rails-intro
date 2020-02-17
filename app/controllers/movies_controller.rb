@@ -10,9 +10,27 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
+  #def index
+  #  @movies = Movie.all
+  #end
+
   def index
-    @movies = Movie.all
-  end
+    sorting = params[:sort] || session[:sort]
+    @all_ratings = Movie.all_ratings
+    ticked_ratings_history = params[:ratings] || session[:ratings]
+    
+    if params[:sort] != session[:sort] or params[:ratings] != session[:ratings]
+      session[:sort] = sorting
+      session[:ratings] = ticked_ratings_history
+      redirect_to :sort => sorting, :ratings => ticked_ratings_history and return
+    end    
+    
+    flash.keep
+    @ratings = ticked_ratings_history.nil? ? Movie.all_ratings : ticked_ratings_history.keys
+    @movies = Movie.order(sorting).where(:rating => @ratings).all
+    
+  end 
+
 
   def new
     # default: render 'new' template
